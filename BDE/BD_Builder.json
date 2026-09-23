@@ -1,7 +1,7 @@
 {
   "name": "Boulder Dash Builder",
   "short_name": "BD_Builder",
-  "start_url": "./index.html",
+  "start_url": "https://github.com/fractalcz/testme/blob/master/BDE/bd_builder.html",
   "display": "standalone",
   "background_color": "#0d103d",
   "theme_color": "#0d103d",
