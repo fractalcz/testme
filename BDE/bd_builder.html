@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <link rel="icon" type="image/png" href="tile_0.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Boulder Dash Builder for iPad</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #0d103d;
+            color: #eee;
+            font-family: sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #app-container {
+            width: 1180px;
+            height: 788px;
+            position: relative;
+            transform-origin: center center;
+            flex-shrink: 0;
+        }
+
+        /* Původní styly zachované beze změny */
+        html body div#app-container div,
+        html body div#app-container input,
+        html body div#app-container button {
+            /* Všechny vnitřní prvky dědí strukturu z kontejneru */
+        }
+
+        /* Definice vzhledu komponent uvnitř kontejneru */
+        #ios-notch-bar {
+            width: 1180px;
+            height: 1px;
+            background-color: #000;
+            position: relative;
+            z-index: 20;
+        }
+
+        #header-block {
+            width: 1180px;
+            height: 52px;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 1.1rem; 
+        }
+
+        #levelNameInput {
+            background-color: #222;
+            color: #0ff;
+            border: 2px solid #000;
+            padding: 4px 8px;
+            font-family: monospace;
+            font-size: 1.0rem;
+            font-weight: bold;
+            border-radius: 6px;
+            width: 130px;
+            text-align: center;
+        }
+
+        .header-btn {
+            background-color: #333;
+            color: #eee;
+            border: 2px solid #555;
+            padding: 4px 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            height: 36px;
+        }
+
+        .header-btn:hover, .header-btn:active {
+            background-color: #444;
+            border-color: #0ff;
+            color: #0ff;
+        }
+
+        #fullscreenBtn {
+            background-color: #00ff00;
+            background-image: url('fullscr.gif');
+            background-size: cover;
+            background-position: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 2px solid #555;
+        }
+
+        #diamondBadge {
+            background-color: #222;
+            color: #0ff;
+            border: 2px solid #555;
+            padding: 0 10px;
+            font-family: monospace;
+            font-weight: bold;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            height: 36px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+        }
+
+        #grid-block {
+            width: 1180px;
+            height: 640px;
+            background: #000000;
+            display: flex;
+            align-items: top;
+            justify-content: center;
+            position: relative;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(40, 29px);
+            grid-template-rows: repeat(22, 29px);
+            gap: 0px;
+            background: #333;
+            width: 1160px;
+            height: 638px;
+        }
+
+        .cell {
+            background-color: #000;
+            background-size: cover;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 1px 1px 1px #000;
+            user-select: none;
+            padding: 1px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .cell.border {
+            cursor: not-allowed;
+        }
+
+        #palette-block {
+            width: 1180px;
+            height: 60px;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        #palette-grid {
+            display: grid;
+            grid-template-columns: repeat(19, 52px);
+            grid-template-rows: 52px;
+            gap: 9px;
+            background: #000;
+            border: 0px solid #ffffff;
+        }
+
+        .palette-item {
+            width: 52px;
+            height: 52px;
+            background-color: #000;
+            background-size: cover;
+            background-position: center;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            cursor: pointer;
+            box-sizing: border-box;
+            border: 0px solid #555;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 1px #000;
+            user-select: none;
+            padding: 1px;
+        }
+
+        .palette-item.selected {
+            border-color: #0ff;
+            box-shadow: 0 0 4px #0ff;
+            z-index: 2;
+        }
+
+        .palette-item.action-btn {
+            background-color: #333;
+        }
+
+        .palette-item.hidden {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .modal-box {
+            display: none;
+            position: absolute;
+            top: 52px;
+            right: 10px;
+            background-color: #222;
+            border: 2px solid #0ff;
+            border-radius: 8px;
+            padding: 16px;
+            width: 450px;
+            max-height: 560px;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .modal-box h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #0ff;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .setting-row-slider {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .setting-row-slider label {
+            color: #ccc;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .setting-row-slider label span {
+            color: #0ff;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .setting-row-slider input[type="range"] {
+            width: 100%;
+            accent-color: #0ff;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .modal-buttons-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        #footerHexOutput {
+            display: grid;
+            grid-template-columns: 70px repeat(8, 1fr);
+            gap: 3px;
+            background: #111;
+            padding: 8px;
+            border: 2px solid #444;
+            border-radius: 6px;
+            max-height: 240px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .footer-cell {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 4px 0;
+            color: #0ff;
+            border-radius: 3px;
+        }
+        .footer-cell.editable { background: #1a2a3a; border-color: #0aa; color: #ff0; font-weight: bold; }
+        .footer-cell.decimal { background: #3a1a1a; border-color: #a00; color: #ff8888; font-weight: bold; }
+        .footer-cell.color-def { background: #3a3a3a; border-color: #777; color: #fff; font-weight: bold; }
+        .footer-cell.card-flag { background: #1a2a4a; border-color: #0088ff; color: #88ccff; font-weight: bold; }
+        .footer-cell.footer4 { background: #3a1a3a; border-color: #a0a; color: #ff88ff; font-weight: bold; }
+        .footer-offset {
+            background: #111;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="ios-notch-bar"></div>
+
+        <div id="header-block">
+            <div class="header-group">
+                <h1>BD Builder V1.72/2026 (c) Fractal_CZ</h1>
+                <input type="text" id="levelNameInput" value="LEVEL01.CAV" spellcheck="false">
+                <button id="nameOkBtn" class="header-btn">OK</button>
+            </div>
+            <div class="header-group">
+                <button id="fullscreenBtn" class="header-btn" title="Fullscreen"></button>
+            </div>
+            <div class="header-group">
+                <div id="diamondBadge">Diamonds: 0</div>
+                <button id="footerInfoBtn" class="header-btn">Footer</button>
+                <button id="settingsBtn" class="header-btn">Values</button>
+            </div>
+
+            <div id="settingsModal" class="modal-box">
+                <h2>Cave Values</h2>
+                <div class="setting-row-slider">
+                    <label>Cave Delay: <span id="valDelay">7</span></label>
+                    <input type="range" id="paramDelay" min="0" max="20" value="7">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Cave Time (Seconds): <span id="valTime">200</span></label>
+                    <input type="range" id="paramTime" min="0" max="255" value="200">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Diamonds Needed: <span id="valDiamonds">25</span></label>
+                    <input type="range" id="paramDiamonds" min="0" max="99" value="25">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Diamond Value: <span id="valDiamondVal">10</span></label>
+                    <input type="range" id="paramDiamondVal" min="0" max="99" value="10">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Bonus Diamond Value: <span id="valBonusVal">70</span></label>
+                    <input type="range" id="paramBonusVal" min="0" max="99" value="70">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Slime Permeability: <span id="valSlime">0</span></label>
+                    <input type="range" id="paramSlime" min="0" max="8" value="0">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Amoeba Time of Growth: <span id="valAmoeba">0</span></label>
+                    <input type="range" id="paramAmoeba" min="0" max="255" value="0">
+                </div>
+                <div class="setting-row-slider">
+                    <label>Magic Wall Milling Time: <span id="valMagicWall">25</span></label>
+                    <input type="range" id="paramMagicWall" min="0" max="255" value="25">
+                </div>
+                <div class="modal-buttons">
+                    <button id="settingsDefaultBtn" class="header-btn" style="border-color: #f80; color: #f80;">Defaults</button>
+                    <div class="modal-buttons-right">
+                        <button id="settingsCancelBtn" class="header-btn">Cancel</button>
+                        <button id="settingsSaveBtn" class="header-btn" style="border-color: #0ff; color: #0ff;">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="footerModal" class="modal-box">
+                <h2>Footer Buffer Info (F1 - F4)</h2>
+                <div id="footerHexOutput">Načítám paměť patičky...</div>
+                <div class="modal-buttons">
+                    <button id="footerCloseBtn" class="header-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="grid-block">
+            <div id="grid"></div>
+        </div>
+
+        <div id="palette-block">
+            <div id="palette-grid">
+                <div class="palette-item" data-tile="0" title="Kartička 0 (HEX: 0)"></div>
+                <div class="palette-item" data-tile="1" title="Kartička 1 (HEX: 1)"></div>
+                <div class="palette-item" data-tile="2" title="Kartička 2 (HEX: 2)"></div>
+                <div class="palette-item" data-tile="3" title="Kartička 3 (HEX: 3)"></div>
+                <div class="palette-item" data-tile="4" title="Kartička 4 (HEX: 4)"></div>
+                <div class="palette-item" data-tile="5" title="Kartička 5 (HEX: 5)"></div>
+                <div class="palette-item" data-tile="6" title="Kartička 6 (HEX: 6)"></div>
+                <div class="palette-item" data-tile="7" title="Kartička 7 (HEX: 7)"></div>
+                <div class="palette-item" data-tile="8" title="Kartička 8 (HEX: 8)"></div>
+                <div class="palette-item" data-tile="9" title="Kartička 9 (HEX: 9)"></div>
+                <div class="palette-item" data-tile="10" title="Kartička 10 (HEX: A)"></div>
+                <div class="palette-item" data-tile="11" title="Kartička 11 (HEX: B)"></div>
+                <div class="palette-item" data-tile="12" title="Kartička 12 (HEX: C)"></div>
+                <div class="palette-item" data-tile="13" title="Kartička 13 (HEX: D)"></div>
+                <div class="palette-item" data-tile="14" title="Kartička 14 (HEX: E)"></div>
+                <div class="palette-item" data-tile="15" title="Kartička 15 (HEX: F)"></div>
+                <div class="palette-item action-btn" data-tile="16" title="Uložit soubor"></div>
+                <div class="palette-item action-btn" data-tile="17" title="Načíst soubor"></div>
+                <div class="palette-item action-btn" data-tile="18" title="Vymazat plochu"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skrytý file input pro načítání souborů -->
+    <input type="file" id="fileLoader" style="display: none;" accept="*">
+
+    <script>
+        // Automatické škálování podle velikosti okna zařízení
+        function resizeApp() {
+            const container = document.getElementById('app-container');
+            const baseW = 1180;
+            const baseH = 788;
+            const scaleX = window.innerWidth / baseW;
+            const scaleY = window.innerHeight / baseH;
+            const scale = Math.min(scaleX, scaleY);
+            container.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeApp);
+        window.addEventListener('DOMContentLoaded', resizeApp);
+
+        const COLS = 40;
+        const ROWS = 22;
+        const BORDER_TILE_INDEX = 4;
+        const DIAMOND_TILE_INDEX = 1;
+
+        let footer1Values = [7, 200, 25, 10, 70, 0, 0, 25];
+        let loadedPaletteColors = [0x74, 0x96, 0x0A, 0x00];
+
+        function buildDynamicFooters() {
+            let has12 = false, has13 = false, has14 = false, hasAmoeba = false, hasSlime = false;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    let val = mapData[r][c];
+                    if (val === 12) has12 = true;
+                    if (val === 13) has13 = true;
+                    if (val === 14) has14 = true;
+                    if (val === 10) hasAmoeba = true;
+                    if (val === 11) hasSlime = true;
+                }
+            }
+
+            let amoebaSlimeByte = hasSlime ? 0x72 : 0xD4;
+            let f3 = new Uint8Array([
+                0x00, loadedPaletteColors[0], 
+                0x00, loadedPaletteColors[1], 
+                0x00, loadedPaletteColors[2], 
+                has12 ? 0x01 : 0x00,
+                amoebaSlimeByte,
+                has13 ? 0x01 : 0x00,
+                loadedPaletteColors[3],
+                has14 ? 0x01 : 0x00
+            ]);
+            let f4 = new Uint8Array([0x44, 0x45, 0x44]);
+            return { footer3: f3, footer4: f4 };
+        }
+
+        const SLOT_WIDTHS = [2, 3, 2, 2, 2, 1, 3, 3];
+        const TILE_IMAGES = [
+            'tile_0.png', 'tile_1.gif', 'tile_2.gif', 'tile_3.png', 
+            'tile_4.png', 'tile_5.png', 'tile_6.png', 'tile_7.png',
+            'tile_8.gif', 'tile_9.gif', 'tile_10.png', 'tile_11.png', 
+            'tile_12.png', 'tile_13.png', 'tile_14.png', 'tile_15.png',
+            'tile_16.png', 'tile_17.png', 'tile_18.png'
+        ];
+        const TILE_FALLBACK_COLORS = [
+            '#a020f0', '#00ff00', '#ffffff', '#888888', '#aaaaaa', '#ff8800', '#00ffff', '#ff00ff',
+            '#00ff88', '#8800ff', '#ffff00', '#ff0000', '#0000ff', '#444444', '#008800', '#884400',
+            '#444488', '#884444', '#884488'
+        ];
+
+        let selectedTile = null;
+        let isDrawing = false;
+        let mapData = Array.from({ length: ROWS }, () => Array(COLS).fill(7));
+        let cellElements = [];
+
+        function initBorder() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) {
+                        mapData[r][c] = BORDER_TILE_INDEX;
+                    }
+                }
+            }
+        }
+
+        const gridEl = document.getElementById('grid');
+        const diamondBadgeEl = document.getElementById('diamondBadge');
+        const levelNameInputEl = document.getElementById('levelNameInput');
+        const nameOkBtnEl = document.getElementById('nameOkBtn');
+        const fileLoaderEl = document.getElementById('fileLoader');
+
+        const settingsBtnEl = document.getElementById('settingsBtn');
+        const settingsModalEl = document.getElementById('settingsModal');
+        const settingsCancelBtnEl = document.getElementById('settingsCancelBtn');
+        const settingsSaveBtnEl = document.getElementById('settingsSaveBtn');
+        const settingsDefaultBtnEl = document.getElementById('settingsDefaultBtn');
+
+        const footerInfoBtnEl = document.getElementById('footerInfoBtn');
+        const footerModalEl = document.getElementById('footerModal');
+        const footerCloseBtnEl = document.getElementById('footerCloseBtn');
+        const footerHexOutputEl = document.getElementById('footerHexOutput');
+        const fullscreenBtnEl = document.getElementById('fullscreenBtn');
+
+        fullscreenBtnEl.onclick = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Chyba pri prepínaní do fullscreenu: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        };
+
+        const sliders = [
+            { id: 'paramDelay', valId: 'valDelay', index: 0 },
+            { id: 'paramTime', valId: 'valTime', index: 1 },
+            { id: 'paramDiamonds', valId: 'valDiamonds', index: 2 },
+            { id: 'paramDiamondVal', valId: 'valDiamondVal', index: 3 },
+            { id: 'paramBonusVal', valId: 'valBonusVal', index: 4 },
+            { id: 'paramSlime', valId: 'valSlime', index: 5 },
+            { id: 'paramAmoeba', valId: 'valAmoeba', index: 6 },
+            { id: 'paramMagicWall', valId: 'valMagicWall', index: 7 }
+        ];
+
+        sliders.forEach((s) => {
+            const input = document.getElementById(s.id);
+            const span = document.getElementById(s.valId);
+            input.oninput = () => {
+                let val = parseInt(input.value, 10);
+                span.innerText = val;
+                footer1Values[s.index] = val;
+            };
+        });
+
+        const defaultFooter1 = [7, 200, 25, 10, 70, 0, 0, 25];
+        function resetDefaultSettings() {
+            footer1Values = [...defaultFooter1];
+            loadedPaletteColors = [0x74, 0x96, 0x0A, 0x00];
+            updateSlidersFromValues();
+        }
+        settingsDefaultBtnEl.onclick = resetDefaultSettings;
+
+        function updateSlidersFromValues() {
+            sliders.forEach((s) => {
+                const input = document.getElementById(s.id);
+                const span = document.getElementById(s.valId);
+                let val = footer1Values[s.index];
+                input.value = val;
+                span.innerText = val;
+            });
+        }
+
+        function buildFooter2Bytes() {
+            let bytes = [];
+            for (let i = 0; i < footer1Values.length; i++) {
+                let val = footer1Values[i];
+                let width = SLOT_WIDTHS[i];
+                let s = String(val).padStart(width, '0');
+                for (let char of s) bytes.push(parseInt(char, 10));
+            }
+            return new Uint8Array(bytes);
+        }
+
+        function getFullFooterBuffer() {
+            let f1Bytes = [];
+            for (let val of footer1Values) f1Bytes.push(val & 0xFF, (val >> 8) & 0xFF);
+            let f2Bytes = buildFooter2Bytes();
+            let dyn = buildDynamicFooters();
+            let total = f1Bytes.length + f2Bytes.length + dyn.footer3.length + dyn.footer4.length;
+            let full = new Uint8Array(total);
+            let pos = 0;
+            full.set(f1Bytes, pos); pos += f1Bytes.length;
+            full.set(f2Bytes, pos); pos += f2Bytes.length;
+            full.set(dyn.footer3, pos); pos += dyn.footer3.length;
+            full.set(dyn.footer4, pos);
+            return full;
+        }
+
+        function updateDiamondCount() {
+            let count = 0;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (mapData[r][c] === DIAMOND_TILE_INDEX) count++;
+                }
+            }
+            diamondBadgeEl.innerText = `Diamonds: ${count}`;
+        }
+
+        function closeAllModals() {
+            settingsModalEl.style.display = 'none';
+            footerModalEl.style.display = 'none';
+        }
+
+        settingsBtnEl.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = settingsModalEl.style.display === 'block';
+            closeAllModals();
+            settingsModalEl.style.display = isVisible ? 'none' : 'block';
+        };
+
+        footerInfoBtnEl.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = footerModalEl.style.display === 'block';
+            closeAllModals();
+            if (!isVisible) {
+                updateFooterHexDisplay();
+                footerModalEl.style.display = 'block';
+            }
+        };
+
+        function updateFooterHexDisplay() {
+            footerHexOutputEl.innerHTML = '';
+            let fullBuffer = getFullFooterBuffer();
+            let dyn = buildDynamicFooters();
+            
+            for (let i = 0; i < fullBuffer.length; i += 8) {
+                let offsetStr = '+' + i.toString(16).padStart(2, '0').toUpperCase();
+                let offsetDiv = document.createElement('div');
+                offsetDiv.className = 'footer-offset';
+                offsetDiv.innerText = offsetStr;
+                footerHexOutputEl.appendChild(offsetDiv);
+
+                for (let j = 0; j < 8; j++) {
+                    let currentIndex = i + j;
+                    let byteDiv = document.createElement('div');
+                    if (currentIndex < fullBuffer.length) {
+                        let byteVal = fullBuffer[currentIndex];
+                        let f3Start = 16 + buildFooter2Bytes().length;
+                        let f4Start = f3Start + dyn.footer3.length;
+
+                        if (currentIndex < 16) {
+                            byteDiv.className = (currentIndex % 2 === 0) ? 'footer-cell decimal' : 'footer-cell editable';
+                        } else if (currentIndex >= 16 && currentIndex < f3Start) {
+                            byteDiv.className = 'footer-cell decimal';
+                        } else if (currentIndex >= f3Start && currentIndex < f4Start) {
+                            let rel = currentIndex - f3Start;
+                            if (rel < 6 || rel === 9) byteDiv.className = 'footer-cell color-def';
+                            else if (rel === 6 || rel === 8 || rel === 10) byteDiv.className = 'footer-cell card-flag';
+                            else byteDiv.className = 'footer-cell footer3';
+                        } else {
+                            byteDiv.className = 'footer-cell footer4';
+                        }
+                        byteDiv.innerText = byteVal.toString(16).padStart(2, '0').toUpperCase();
+                    } else {
+                        byteDiv.className = 'footer-cell';
+                        byteDiv.innerText = '--';
+                    }
+                    footerHexOutputEl.appendChild(byteDiv);
+                }
+            }
+        }
+
+        settingsCancelBtnEl.onclick = closeAllModals;
+        settingsSaveBtnEl.onclick = closeAllModals;
+        footerCloseBtnEl.onclick = closeAllModals;
+        window.onclick = closeAllModals;
+        settingsModalEl.onclick = (e) => { e.stopPropagation(); };
+        footerModalEl.onclick = (e) => { e.stopPropagation(); };
+
+        function applyLevelNameFormat() {
+            let val = levelNameInputEl.value.toUpperCase().trim();
+            let parts = val.split('.');
+            let namePart = parts[0].replace(/[^A-Z0-9]/g, '');
+            if (namePart.length > 8) namePart = namePart.substring(0, 8);
+            if (namePart === '') namePart = 'LEVEL';
+            levelNameInputEl.value = namePart + '.CAV';
+        }
+
+        nameOkBtnEl.onclick = applyLevelNameFormat;
+        levelNameInputEl.onkeydown = (e) => {
+            if (e.key === 'Enter') { applyLevelNameFormat(); levelNameInputEl.blur(); }
+        };
+
+        function applyTileStyle(element, tileId) {
+            element.style.backgroundColor = TILE_FALLBACK_COLORS[tileId];
+            element.style.backgroundImage = `url('${TILE_IMAGES[tileId]}')`;
+        }
+
+        function selectTile(i) {
+            selectedTile = i;
+            document.querySelectorAll('.palette-item').forEach(el => el.classList.remove('selected'));
+            const paletteItem = document.querySelector(`.palette-item[data-tile="${i}"]`);
+            if (paletteItem) paletteItem.classList.add('selected');
+        }
+
+        function initPaletteDOM() {
+            const paletteItems = document.querySelectorAll('.palette-item');
+            paletteItems.forEach(item => {
+                const i = parseInt(item.getAttribute('data-tile'), 10);
+                applyTileStyle(item, i);
+
+                const handlePaletteAction = (e) => {
+                    if (i === 16) { saveBinaryLevel(); return; }
+                    if (i === 17) { 
+                        fileLoaderEl.click(); 
+                        return; 
+                    }
+                    if (i === 18) { eraseLevel(); return; }
+                    
+                    e.preventDefault();
+                    selectTile(i);
+                };
+
+                item.onclick = handlePaletteAction;
+                item.ontouchstart = handlePaletteAction;
+            });
+        }
+
+        fileLoaderEl.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const buffer = new Uint8Array(event.target.result);
+                    if (buffer.length < 416) { alert('Chyba: Soubor je příliš malý!'); return; }
+
+                    let nameChars = [];
+                    for (let i = 4; i < 16; i++) {
+                        let code = buffer[i];
+                        if (code === 0x9B || code === 0x20) break;
+                        nameChars.push(String.fromCharCode(code));
+                    }
+                    let loadedName = nameChars.join('').trim();
+                    if (loadedName) {
+                        if (!loadedName.includes('.')) loadedName += '.CAV';
+                        levelNameInputEl.value = loadedName.toUpperCase();
+                    }
+
+                    let offset = 16;
+                    let lastRowIndex = ROWS - 1;
+                    for (let c = 0; c < COLS; c += 2) {
+                        if (offset < buffer.length) {
+                            const packedByte = buffer[offset++];
+                            mapData[lastRowIndex][c] = (packedByte >> 4) & 0x0F;
+                            mapData[lastRowIndex][c + 1] = packedByte & 0x0F;
+                        }
+                    }
+                    for (let r = 0; r <= ROWS - 2; r++) {
+                        for (let c = 0; c < COLS; c += 2) {
+                            if (offset < buffer.length) {
+                                const packedByte = buffer[offset++];
+                                mapData[r][c] = (packedByte >> 4) & 0x0F;
+                                mapData[r][c + 1] = packedByte & 0x0F;
+                            }
+                        }
+                    }
+
+                    if (offset + 16 <= buffer.length) {
+                        for (let i = 0; i < 8; i++) {
+                            let low = buffer[offset++];
+                            let high = buffer[offset++];
+                            footer1Values[i] = low | (high << 8);
+                        }
+                        updateSlidersFromValues();
+                    }
+
+                    offset += buildFooter2Bytes().length;
+                    if (offset + 11 <= buffer.length) {
+                        loadedPaletteColors[0] = buffer[offset + 1];
+                        loadedPaletteColors[1] = buffer[offset + 3];
+                        loadedPaletteColors[2] = buffer[offset + 5];
+                        loadedPaletteColors[3] = buffer[offset + 9];
+                    }
+
+                    initBorder();
+                    for (let r = 0; r < ROWS; r++) {
+                        for (let c = 0; c < COLS; c++) {
+                            applyTileStyle(cellElements[r][c], mapData[r][c]);
+                        }
+                    }
+                    updateDiamondCount();
+                    updatePaletteVisibility();
+                } catch (err) {
+                    console.error(err);
+                    alert('Chyba při parsování souboru.');
+                } finally {
+                    fileLoaderEl.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        function updatePaletteVisibility() {
+            let hasAmoeba = false, hasSlime = false;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (mapData[r][c] === 10) hasAmoeba = true;
+                    if (mapData[r][c] === 11) hasSlime = true;
+                }
+            }
+
+            const slimeEl = document.querySelector('.palette-item[data-tile="11"]');
+            const amoebaEl = document.querySelector('.palette-item[data-tile="10"]');
+
+            if (slimeEl) slimeEl.classList.toggle('hidden', hasAmoeba);
+            if (amoebaEl) amoebaEl.classList.toggle('hidden', hasSlime);
+
+            if (selectedTile === 10 && hasSlime) selectTile(7);
+            if (selectedTile === 11 && hasAmoeba) selectTile(7);
+        }
+
+        function initGridDOM() {
+            gridEl.innerHTML = '';
+            cellElements = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    applyTileStyle(cell, mapData[r][c]);
+                    if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) cell.classList.add('border');
+                    
+                    gridEl.appendChild(cell);
+                    cellElements[r][c] = cell;
+                }
+            }
+            updateDiamondCount();
+            updatePaletteVisibility();
+        }
+
+        function paintCell(r, c) {
+            if (selectedTile === null) selectTile(7);
+            if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+            if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) return;
+
+            if (selectedTile === 12 || selectedTile === 13 || selectedTile === 14) {
+                for (let row = 0; row < ROWS; row++) {
+                    for (let col = 0; col < COLS; col++) {
+                        let currentVal = mapData[row][col];
+                        if (currentVal === selectedTile) { 
+                            mapData[row][col] = 7; 
+                            applyTileStyle(cellElements[row][col], 7);
+                        }
+                        if (selectedTile === 12 && currentVal === 13) { 
+                            mapData[row][col] = 7; 
+                            applyTileStyle(cellElements[row][col], 7);
+                        }
+                        if (selectedTile === 13 && currentVal === 12) { 
+                            mapData[row][col] = 7; 
+                            applyTileStyle(cellElements[row][col], 7);
+                        }
+                    }
+                }
+            }
+
+            if (mapData[r][c] !== selectedTile) {
+                mapData[r][c] = selectedTile;
+                applyTileStyle(cellElements[r][c], selectedTile);
+                updateDiamondCount();
+                updatePaletteVisibility();
+            }
+        }
+
+        function getCellFromCoordinates(clientX, clientY) {
+            const rect = gridEl.getBoundingClientRect();
+            if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+                return null;
+            }
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const c = Math.floor((x / rect.width) * COLS);
+            const r = Math.floor((y / rect.height) * ROWS);
+            return { r, c };
+        }
+
+        gridEl.onmousedown = (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getCellFromCoordinates(e.clientX, e.clientY);
+            if (pos) paintCell(pos.r, pos.c);
+        };
+
+        gridEl.onmousemove = (e) => {
+            if (!isDrawing) return;
+            const pos = getCellFromCoordinates(e.clientX, e.clientY);
+            if (pos) paintCell(pos.r, pos.c);
+        };
+
+        window.onmouseup = () => { isDrawing = false; };
+
+        gridEl.ontouchstart = (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            const touch = e.touches[0];
+            const pos = getCellFromCoordinates(touch.clientX, touch.clientY);
+            if (pos) paintCell(pos.r, pos.c);
+        };
+
+        gridEl.ontouchmove = (e) => {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const pos = getCellFromCoordinates(touch.clientX, touch.clientY);
+            if (pos) paintCell(pos.r, pos.c);
+        };
+
+        gridEl.ontouchend = () => { isDrawing = false; };
+        gridEl.ontouchcancel = () => { isDrawing = false; };
+
+        function saveBinaryLevel() {
+            let rawName = levelNameInputEl.value.trim() || 'LEVEL.CAV';
+            let f1Bytes = [];
+            for (let val of footer1Values) f1Bytes.push(val & 0xFF, (val >> 8) & 0xFF);
+            let f2Bytes = buildFooter2Bytes();
+            let dyn = buildDynamicFooters();
+            
+            const mapDataSize = ROWS * (COLS / 2);
+            const footerTotalSize = f1Bytes.length + f2Bytes.length + dyn.footer3.length + dyn.footer4.length;
+            const totalFileSize = 16 + mapDataSize + footerTotalSize;
+            const totalFileButton = new Uint8Array(totalFileSize);
+
+            for (let i = 0; i < 4; i++) totalFileButton[i] = 0xAB;
+            let nameChars = [];
+            for (let i = 0; i < rawName.length && i < 12; i++) nameChars.push(rawName.charCodeAt(i));
+            if (nameChars.length < 12) {
+                totalFileButton.set(nameChars, 4);
+                totalFileButton[4 + nameChars.length] = 0x9B;
+                totalFileButton.fill(0x20, 4 + nameChars.length + 1, 16);
+            } else {
+                totalFileButton.set(nameChars, 4);
+            }
+
+            let offset = 16;
+            let lastRowIndex = ROWS - 1;
+            for (let c = 0; c < COLS; c += 2) {
+                totalFileButton[offset++] = ((mapData[lastRowIndex][c] & 0x0F) << 4) | (mapData[lastRowIndex][c + 1] & 0x0F);
+            }
+            for (let r = 0; r <= ROWS - 2; r++) {
+                for (let c = 0; c < COLS; c += 2) {
+                    totalFileButton[offset++] = ((mapData[r][c] & 0x0F) << 4) | (mapData[r][c + 1] & 0x0F);
+                }
+            }
+
+            totalFileButton.set(f1Bytes, offset); offset += f1Bytes.length;
+            totalFileButton.set(f2Bytes, offset); offset += f2Bytes.length;
+            totalFileButton.set(dyn.footer3, offset); offset += dyn.footer3.length;
+            totalFileButton.set(dyn.footer4, offset);
+
+            const blob = new Blob([totalFileButton], { type: 'application/octet-stream' | 'application/octet-stream' });
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.href = URL.createObjectURL(blob);
+            downloadAnchor.download = rawName;
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function eraseLevel() {
+            if (confirm('Are you sure you want to erase the level?')) {
+                mapData = Array.from({ length: ROWS }, () => Array(COLS).fill(7));
+                initBorder();
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        applyTileStyle(cellElements[r][c], mapData[r][c]);
+                    }
+                }
+                updateDiamondCount();
+                updatePaletteVisibility();
+                resetDefaultSettings();
+            }
+        }
+
+        initBorder();
+        updateSlidersFromValues();
+        initPaletteDOM();
+        initGridDOM();
+    </script>
+</body>
+</html>
